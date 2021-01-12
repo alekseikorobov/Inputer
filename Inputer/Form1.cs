@@ -42,7 +42,7 @@ namespace Inputer
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            Hide();            
+            Hide();
         }
 
 

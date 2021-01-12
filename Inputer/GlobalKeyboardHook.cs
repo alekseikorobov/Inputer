@@ -32,9 +32,7 @@ namespace Inputer
         public event EventHandler<GlobalKeyboardHookEventArgs> KeyboardPressed;
         public event GetEventMouse eventMouse;
         public delegate void GetEventMouse(TypeMouse type, int x, int y);
-        //public event ChangeLangEvent ChangeLang;
-        //public delegate void ChangeLangEvent(TypeMouse type, int x, int y);
-
+        
         // EDT: Added an optional parameter (registeredKeys) that accepts keys to restict
         // the logging mechanism.
         /// <summary>
@@ -260,7 +258,6 @@ namespace Inputer
         }
 
         public const int WH_KEYBOARD_LL = 13;
-        //const int HC_ACTION = 0;
 
         public enum KeyboardState
         {
@@ -317,16 +314,6 @@ namespace Inputer
                 eventArguments.CtrlPressed = ctrlPressed;
                 eventArguments.ShiftPressed = shiftPressed;
 
-                //if(ctrlPressed && shiftPressed
-                //    //&& (eventArguments.KeyboardState == KeyboardState.KeyUp
-                //    //|| eventArguments.KeyboardState == KeyboardState.SysKeyUp)
-                //    )
-                //{
-                //    MessageBox.Show("change lang");
-                //}
-                // EDT: Removed the comparison-logic from the usage-area so the user does not need to mess around with it.
-                // Either the incoming key has to be part of RegisteredKeys (see constructor on top) or RegisterdKeys
-                // has to be null for the event to get fired.
                 var key = (Keys)p.VirtualCode;
                 if ((eventArguments.KeyboardState == KeyboardState.KeyUp
                     || eventArguments.KeyboardState == KeyboardState.SysKeyUp)
@@ -354,16 +341,5 @@ namespace Inputer
         }
 
 
-
-
-        //void function()
-        //{
-        //    var threadInfo = new WinAPI.GUITHREADINFO();
-        //    threadInfo.cbSize = Marshal.SizeOf(threadInfo);
-        //    WinAPI.GetGUIThreadInfo(0, ref threadInfo);
-
-        //    IntPtr hWnd = (threadInfo.hwndFocus != IntPtr.Zero) ? threadInfo.hwndFocus : threadInfo.hwndActive;
-        //    WinAPI.PostMessage(hWnd, WinAPI.WM_INPUTLANGCHANGEREQUEST, WinAPI.WM_INPUTLANGCHANGE_SYSCHARSET, (int)_seconLayot);
-        //}
     }
 }
