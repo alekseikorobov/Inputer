@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -29,7 +30,16 @@ namespace Inputer
 
             this.WindowState = FormWindowState.Minimized;
 
+            var switchKeyString = ConfigurationManager.AppSettings["SwitchKey"].ToString();
+            if (!string.IsNullOrEmpty(switchKeyString) && !Enum.TryParse(switchKeyString, true, out switchKey))
+            {
+                switchKey = Keys.Pause;
+            }
+
+
         }
+        private Keys switchKey;
+
         private void Form1_Resize(object sender, EventArgs e)
         {
             Hide();            
@@ -49,7 +59,7 @@ namespace Inputer
         {
             //System.Diagnostics.Debug.WriteLine($"key - {e.KeyboardData.Key}, shift -  {e.ShiftPressed}");
 
-            if (e.KeyboardData.Key == Keys.Pause)
+            if (e.KeyboardData.Key == switchKey)
             {
                 changeLeng_Click(null, null);
                 return;
