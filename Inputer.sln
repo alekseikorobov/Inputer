@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1259
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inputer", "Inputer\Inputer.csproj", "{AB6E0697-942C-40ED-A40A-F7B4D733142B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InputerTests", "InputerTests\InputerTests.csproj", "{3CA36154-5D03-4A40-9D3D-B6E80F9A6897}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB6E0697-942C-40ED-A40A-F7B4D733142B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB6E0697-942C-40ED-A40A-F7B4D733142B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB6E0697-942C-40ED-A40A-F7B4D733142B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB6E0697-942C-40ED-A40A-F7B4D733142B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CA36154-5D03-4A40-9D3D-B6E80F9A6897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CA36154-5D03-4A40-9D3D-B6E80F9A6897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CA36154-5D03-4A40-9D3D-B6E80F9A6897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CA36154-5D03-4A40-9D3D-B6E80F9A6897}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7629936E-D221-43B0-BE4D-6B47110FD82B}
+	EndGlobalSection
+EndGlobal
