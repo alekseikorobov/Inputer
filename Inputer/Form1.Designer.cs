@@ -35,6 +35,7 @@
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.изменитьГорячуюКлавишуToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -68,18 +69,26 @@
             // 
             // contextMenuStrip1
             // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.выходToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(109, 26);
+            //this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //this.выходToolStripMenuItem,
+            //this.изменитьГорячуюКлавишуToolStripMenuItem});
+            //this.contextMenuStrip1.Name = "contextMenuStrip1";
+            //this.contextMenuStrip1.Size = new System.Drawing.Size(232, 70);
             // 
             // выходToolStripMenuItem
             // 
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            this.выходToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
             this.выходToolStripMenuItem.Text = "Выход";
             this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
             // 
+            //// изменитьГорячуюКлавишуToolStripMenuItem
+            //// 
+            //this.изменитьГорячуюКлавишуToolStripMenuItem.Name = "изменитьГорячуюКлавишуToolStripMenuItem";
+            //this.изменитьГорячуюКлавишуToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            //this.изменитьГорячуюКлавишуToolStripMenuItem.Text = "Изменить горячую клавишу";
+            //this.изменитьГорячуюКлавишуToolStripMenuItem.Click += new System.EventHandler(this.изменитьГорячуюКлавишуToolStripMenuItem_Click);
+            //// 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -103,6 +112,7 @@
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
+        //private System.Windows.Forms.ToolStripMenuItem изменитьГорячуюКлавишуToolStripMenuItem;
     }
 }
 
