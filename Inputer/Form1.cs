@@ -67,7 +67,7 @@ namespace Inputer
             logger.Trace($"key - {e.KeyboardData.Key}, shift -  {e.ShiftPressed}, ctr - {e.CtrlPressed}, state - {e.KeyboardState}");
 
             if (e.KeyboardData.Key == switchKey)
-            {                
+            {
                 changeLeng_Click(null, null);
                 return;
             }
@@ -90,7 +90,7 @@ namespace Inputer
             if (keyString != null)
             {
                 words.Add(Tuple.Create(keyString, e.ShiftPressed));
-                logger.Trace($"now length words - {words.Count}");
+                logger.Trace($"now length words - {words.Count} - {string.Join(",", words)}");
             }
             else
             {
@@ -161,7 +161,7 @@ namespace Inputer
         {
             logger.Trace($"start changeLeng_Click");
             var nowLang = GetInputLang();
-            
+
             bool isRus = nowLang == langRus;
 
             ///https://ru.stackoverflow.com/questions/413208/%D0%A1%D0%BC%D0%B5%D0%BD%D0%B0-%D1%80%D0%B0%D1%81%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8-%D0%BA%D0%BB%D0%B0%D0%B2%D0%B8%D0%B0%D1%82%D1%83%D1%80%D1%8B-%D0%B2-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B5           
@@ -185,7 +185,7 @@ namespace Inputer
             {
                 logger.Trace($"input words");
 
-                logger.Trace($"isRus - {isRus}, start replace words - {string.Join(",", words.Select(c => c.Item1 + " - " + c.Item2))}");
+                logger.Trace($"isRus - {isRus}, start replace words - {string.Join(",", words)}");
                 var l = words.Count;
                 var w = words.Select(c => Tuple.Create(c.Item1, c.Item2)).ToList();
                 logger.Trace($"delete {l} chars");
@@ -217,7 +217,7 @@ namespace Inputer
             {
                 var ch = word.Item1;
                 var isShift = word.Item2;
-                logger.Trace($"ch - {ch}, isShift - {isShift}");
+                logger.Trace($"{word}");
                 var index = (isShift ? alphabitFromShift : alphabitFrom).IndexOf(isShift ? ch : ch.ToLower());
                 if (index != -1)
                 {
