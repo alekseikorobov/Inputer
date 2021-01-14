@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Inputer
@@ -39,8 +35,9 @@ namespace Inputer
         /// 
         /// </summary>
         /// <param name="registeredKeys">Keys that should trigger logging. Pass null for full logging.</param>
-        public GlobalKeyboardHook(bool isKey = true, bool isMouse = true)
+        public GlobalKeyboardHook(bool isKey = true, bool isMouse = true, Keys hotKey = Keys.Pause)
         {
+            _hotKey = hotKey;
             if (isKey)
             {
                 _windowsHookHandle = IntPtr.Zero;
@@ -274,6 +271,8 @@ namespace Inputer
         bool save = false;
         bool reset = false;
         public bool isDebug = false;
+        private Keys _hotKey;
+
         public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             bool fEatKeyStroke = false;
@@ -313,6 +312,18 @@ namespace Inputer
                 var eventArguments = new GlobalKeyboardHookEventArgs(p, (KeyboardState)wparamTyped);
                 eventArguments.CtrlPressed = ctrlPressed;
                 eventArguments.ShiftPressed = shiftPressed;
+
+                if (p.Key == _hotKey)
+                {
+                    if ((eventArguments.KeyboardState == KeyboardState.KeyUp
+                    || eventArguments.KeyboardState == KeyboardState.SysKeyUp))
+                    {
+                        EventHandler<GlobalKeyboardHookEventArgs> handler = KeyboardPressed;
+                        handler?.Invoke(this, eventArguments);
+                    }
+                    return (IntPtr)1;
+                }
+
 
                 var key = (Keys)p.VirtualCode;
                 if ((eventArguments.KeyboardState == KeyboardState.KeyUp

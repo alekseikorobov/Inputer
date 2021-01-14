@@ -23,8 +23,19 @@ namespace Inputer
             logger = NLog.LogManager.GetLogger("Application");
             InitializeComponent();
 
+            var switchKeyString = ConfigurationManager.AppSettings["SwitchKey"].ToString();
+            logger.Trace($"Get switchKeyString from config - {switchKeyString}");
+            if (!string.IsNullOrEmpty(switchKeyString) && !Enum.TryParse(switchKeyString, true, out switchKey))
+            {
+                switchKey = Keys.Pause;
+                logger.Trace($"Not Set from config set default {switchKey}");
+            }
+            logger.Trace($"Set from config set default {switchKey}");
+
+
             logger.Trace($"Init hook");
-            _globalKeyboardHook = new GlobalKeyboardHook(true, false);
+            _globalKeyboardHook = new GlobalKeyboardHook(true, false, switchKey);
+
 
             _globalKeyboardHook.KeyboardPressed += EventHook_eventKey;
 
@@ -35,14 +46,6 @@ namespace Inputer
             logger.Trace($"set Minimized WindowState");
             this.WindowState = FormWindowState.Minimized;
 
-            var switchKeyString = ConfigurationManager.AppSettings["SwitchKey"].ToString();
-            logger.Trace($"Get switchKeyString from config - {switchKeyString}");
-            if (!string.IsNullOrEmpty(switchKeyString) && !Enum.TryParse(switchKeyString, true, out switchKey))
-            {
-                switchKey = Keys.Pause;
-                logger.Trace($"Not Set from config set default {switchKey}");
-            }
-            logger.Trace($"Set from config set default {switchKey}");
         }
         private Keys switchKey;
 
