@@ -30,15 +30,22 @@ namespace Inputer
                 switchKey = Keys.Pause;
                 logger.Trace($"Not Set from config set default {switchKey}");
             }
+            if(switchKey == Keys.Pause)
+            {
+                pauseBrakeToolStripMenuItem.Checked = true;
+            }
+
             logger.Trace($"Set from config set default {switchKey}");
 
 
             logger.Trace($"Init hook");
-            _globalKeyboardHook = new GlobalKeyboardHook(true, false, switchKey);
+            _globalKeyboardHook = new GlobalKeyboardHook(true, false);
+            _globalKeyboardHook.HotKey = switchKey;
 
 
             _globalKeyboardHook.KeyboardPressed += EventHook_eventKey;
 
+            //if you need include event mouse
             //_globalKeyboardHook.eventMouse += _globalKeyboardHook_eventMouse;
 
             this.Resize += new System.EventHandler(this.Form1_Resize);
@@ -59,10 +66,7 @@ namespace Inputer
         public Form1(string test)
         {
         }
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
-
+    
         List<Tuple<string, bool>> words = new List<Tuple<string, bool>>();
 
         private void EventHook_eventKey(object sender, GlobalKeyboardHookEventArgs e)
@@ -71,7 +75,7 @@ namespace Inputer
 
             if (e.KeyboardData.Key == switchKey)
             {
-                changeLeng_Click(null, null);
+                ChangeLanguage();
                 return;
             }
             if (e.KeyboardData.Key == Keys.Back)
@@ -88,7 +92,7 @@ namespace Inputer
                 }
                 return;
             }
-            var keyString = KeysConv.ConvertToString(e.KeyboardData.Key);
+            var keyString = !e.CtrlPressed ? KeysConv.ConvertToString(e.KeyboardData.Key) : null;
             logger.Trace($"keyString - {keyString}");
             if (keyString != null)
             {
@@ -102,56 +106,32 @@ namespace Inputer
             }
         }
 
-        private string ConvertCharForSend(string w1)
+        private string ConvertCharForSend(string wordString)
         {
-            logger.Trace($"start ConvertCharForSend, input - {w1}");
+            logger.Trace($"start ConvertCharForSend, input - {wordString}");
             string charReplace = "()\"}{+%^&:";
             //string w1 = "!@#$%^&*()_+ !\"№;%:?*()_+ -={}[]\\|;':\"<>?,./";
-            StringBuilder newW1 = new StringBuilder();
+            StringBuilder resultWordString = new StringBuilder();
 
-            foreach (var w in w1)
+            foreach (var w in wordString)
             {
-                newW1.Append(charReplace.Contains(w) ? "{" + w + "}" : w.ToString());
+                resultWordString.Append(charReplace.Contains(w) ? "{" + w + "}" : w.ToString());
             }
 
-            var res = newW1.ToString();
+            var res = resultWordString.ToString();
             logger.Trace($"end ConvertCharForSend, input - {res}");
             return res;
         }
 
-        #region DLL
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool PostMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
-        [DllImport("user32.dll")]
-        static extern int LoadKeyboardLayout(string pwszKLID, uint Flags);
-
-        StringBuilder Input = new StringBuilder(9);
-        [DllImport("user32.dll")]
-        static extern uint GetKeyboardLayoutList(int nBuff, [Out] IntPtr[] lpList);
-
-        [DllImport("user32.dll")]
-        static extern bool GetKeyboardLayoutName([Out] StringBuilder pwszKLID);
-        [DllImport("user32.dll")]
-        static extern IntPtr GetKeyboardLayout(uint idThread);
-        [DllImport("user32.dll")]
-        static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
-        [DllImport("user32.dll")]
-        public static extern int ActivateKeyboardLayout(int HKL, int flags);
-
-
-        #endregion
 
         public string GetInputLang()
         {
+            StringBuilder Input = new StringBuilder(9);
+
             /*https://stackoverrun.com/ru/q/5271980*/
-            IntPtr layout = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero));
-            ActivateKeyboardLayout((int)layout, 100);
-            GetKeyboardLayoutName(Input);
+            IntPtr layout = Win32.GetKeyboardLayout(Win32.GetWindowThreadProcessId(Win32.GetForegroundWindow(), IntPtr.Zero));
+            Win32.ActivateKeyboardLayout((int)layout, 100);
+            Win32.GetKeyboardLayoutName(Input);
             var res = Input.ToString();
             logger.Trace($"GetInputLang result - {res} (is rus {res == langRus})");
             return res;
@@ -160,9 +140,9 @@ namespace Inputer
 
         const string langEng = "00000409";
         const string langRus = "00000419";
-        private void changeLeng_Click(object sender, EventArgs e)
+        private void ChangeLanguage()
         {
-            logger.Trace($"start changeLeng_Click");
+            logger.Trace($"start ChangeLanguage");
             var nowLang = GetInputLang();
 
             bool isRus = nowLang == langRus;
@@ -174,8 +154,8 @@ namespace Inputer
             logger.Trace($"switch to new lang - {newLang}");
             isRus = !isRus;
 
-            int ret = LoadKeyboardLayout(newLang, 1);
-            PostMessage(GetForegroundWindow(), 0x50, 1, ret);
+            int ret = Win32.LoadKeyboardLayout(newLang, 1);
+            Win32.PostMessage(Win32.GetForegroundWindow(), 0x50, 1, ret);
 
             do
             {
@@ -189,15 +169,15 @@ namespace Inputer
                 logger.Trace($"input words");
 
                 logger.Trace($"isRus - {isRus}, start replace words - {string.Join(",", words)}");
-                var l = words.Count;
-                var w = words.Select(c => Tuple.Create(c.Item1, c.Item2)).ToList();
-                logger.Trace($"delete {l} chars");
-                for (int i = 0; i < l; i++)
+                var count = words.Count;
+                var wordsCopy = words.Select(c => Tuple.Create(c.Item1, c.Item2)).ToList();
+                logger.Trace($"delete {count} chars");
+                for (int i = 0; i < count; i++)
                     SendKeys.Send("{BACKSPACE}");
 
-                string w1 = Convert(w, !isRus);
-                var newW = ConvertCharForSend(w1);
-                SendKeys.Send(newW);
+                string newWordConvertedString = Convert(wordsCopy, !isRus);
+                var sendedWordsString = ConvertCharForSend(newWordConvertedString);
+                SendKeys.Send(sendedWordsString);
             }
         }
 
@@ -237,16 +217,9 @@ namespace Inputer
 
         const string alphabitEn = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./`1234567890-=";
         const string alphabitEnShiftFrom = "QWERTYUIOP[]\\ASDFGHJKL;'ZXCVBNM,./`1234567890-=";
-
         const string alphabitRu = "йцукенгшщзхъ\\фывапролджэячсмитьбю.ё1234567890-=";
-
-
         const string alphabitRuShiftTo = "ЙЦУКЕНГШЩЗХЪ\\ФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё!\"№;%:?*()_+";
-
-        //const string alphabitRuShiftFrom = "ЙЦУКЕНГШЩЗХЪ/ФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,1234567890_+";
-        //const string alphabitEnShiftTo = "QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?~!@#$%^&*()_+";
-
-
+        
         private void button1_Click(object sender, EventArgs e)
         {
             if (_globalKeyboardHook != null)
@@ -264,9 +237,20 @@ namespace Inputer
             this.Close();
         }
 
-        private void изменитьГорячуюКлавишуToolStripMenuItem_Click(object sender, EventArgs e)
+        private void insertToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            switchKey = Keys.Insert;
+            _globalKeyboardHook.HotKey = switchKey;
+            insertToolStripMenuItem.Checked = true;
+            pauseBrakeToolStripMenuItem.Checked = false;
+        }
 
+        private void pauseBrakeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            switchKey = Keys.Pause;
+            _globalKeyboardHook.HotKey = switchKey;
+            insertToolStripMenuItem.Checked = false;
+            pauseBrakeToolStripMenuItem.Checked = true;
         }
     }
 }
