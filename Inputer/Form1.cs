@@ -24,21 +24,21 @@ namespace Inputer
             InitializeComponent();
 
             var switchKeyString = ConfigurationManager.AppSettings["SwitchKey"].ToString();
-            logger.Trace($"Get switchKeyString from config - {switchKeyString}");
+            logger?.Trace($"Get switchKeyString from config - {switchKeyString}");
             if (!string.IsNullOrEmpty(switchKeyString) && !Enum.TryParse(switchKeyString, true, out switchKey))
             {
                 switchKey = Keys.Pause;
-                logger.Trace($"Not Set from config set default {switchKey}");
+                logger?.Trace($"Not Set from config set default {switchKey}");
             }
             if(switchKey == Keys.Pause)
             {
                 pauseBrakeToolStripMenuItem.Checked = true;
             }
 
-            logger.Trace($"Set from config set default {switchKey}");
+            logger?.Trace($"Set from config set default {switchKey}");
 
 
-            logger.Trace($"Init hook");
+            logger?.Trace($"Init hook");
             _globalKeyboardHook = new GlobalKeyboardHook(true, false);
             _globalKeyboardHook.HotKey = switchKey;
 
@@ -50,7 +50,7 @@ namespace Inputer
 
             this.Resize += new System.EventHandler(this.Form1_Resize);
 
-            logger.Trace($"set Minimized WindowState");
+            logger?.Trace($"set Minimized WindowState");
             this.WindowState = FormWindowState.Minimized;
 
         }
@@ -58,7 +58,7 @@ namespace Inputer
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            logger.Trace($"event Form1_Resize");
+            logger?.Trace($"event Form1_Resize");
             Hide();
         }
 
@@ -71,7 +71,7 @@ namespace Inputer
 
         private void EventHook_eventKey(object sender, GlobalKeyboardHookEventArgs e)
         {
-            logger.Trace($"key - {e.KeyboardData.Key}, shift -  {e.ShiftPressed}, ctr - {e.CtrlPressed}, state - {e.KeyboardState}");
+            logger?.Trace($"key - {e.KeyboardData.Key}, shift -  {e.ShiftPressed}, ctr - {e.CtrlPressed}, state - {e.KeyboardState}");
 
             if (e.KeyboardData.Key == switchKey)
             {
@@ -84,31 +84,31 @@ namespace Inputer
                 {
                     var ch = words[words.Count - 1];
                     words.RemoveAt(words.Count - 1);
-                    logger.Trace($"Remove last char - '{ch}' from words, now length - {words.Count}");
+                    logger?.Trace($"Remove last char - '{ch}' from words, now length - {words.Count}");
                 }
                 else
                 {
-                    logger.Trace($"words is empty");
+                    logger?.Trace($"words is empty");
                 }
                 return;
             }
             var keyString = !e.CtrlPressed ? KeysConv.ConvertToString(e.KeyboardData.Key) : null;
-            logger.Trace($"keyString - {keyString}");
+            logger?.Trace($"keyString - {keyString}");
             if (keyString != null)
             {
                 words.Add(Tuple.Create(keyString, e.ShiftPressed));
-                logger.Trace($"now length words - {words.Count} - {string.Join(",", words)}");
+                logger?.Trace($"now length words - {words.Count} - {string.Join(",", words)}");
             }
             else
             {
-                logger.Trace($"Empty words");
+                logger?.Trace($"Empty words");
                 words.Clear();
             }
         }
 
         private string ConvertCharForSend(string wordString)
         {
-            logger.Trace($"start ConvertCharForSend, input - {wordString}");
+            logger?.Trace($"start ConvertCharForSend, input - {wordString}");
             string charReplace = "()\"}{+%^&:";
             //string w1 = "!@#$%^&*()_+ !\"№;%:?*()_+ -={}[]\\|;':\"<>?,./";
             StringBuilder resultWordString = new StringBuilder();
@@ -119,7 +119,7 @@ namespace Inputer
             }
 
             var res = resultWordString.ToString();
-            logger.Trace($"end ConvertCharForSend, input - {res}");
+            logger?.Trace($"end ConvertCharForSend, input - {res}");
             return res;
         }
 
@@ -133,7 +133,7 @@ namespace Inputer
             Win32.ActivateKeyboardLayout((int)layout, 100);
             Win32.GetKeyboardLayoutName(Input);
             var res = Input.ToString();
-            logger.Trace($"GetInputLang result - {res} (is rus {res == langRus})");
+            logger?.Trace($"GetInputLang result - {res} (is rus {res == langRus})");
             return res;
 
         }
@@ -142,7 +142,7 @@ namespace Inputer
         const string langRus = "00000419";
         private void ChangeLanguage()
         {
-            logger.Trace($"start ChangeLanguage");
+            logger?.Trace($"start ChangeLanguage");
             var nowLang = GetInputLang();
 
             bool isRus = nowLang == langRus;
@@ -151,7 +151,7 @@ namespace Inputer
 
             var newLang = isRus ? langEng : langRus;
 
-            logger.Trace($"switch to new lang - {newLang}");
+            logger?.Trace($"switch to new lang - {newLang}");
             isRus = !isRus;
 
             int ret = Win32.LoadKeyboardLayout(newLang, 1);
@@ -162,16 +162,16 @@ namespace Inputer
                 nowLang = GetInputLang();
             } while (newLang != nowLang);
 
-            logger.Trace($"Seted to new lang - {newLang}");
+            logger?.Trace($"Seted to new lang - {newLang}");
 
             if (words.Any())
             {
-                logger.Trace($"input words");
+                logger?.Trace($"input words");
 
-                logger.Trace($"isRus - {isRus}, start replace words - {string.Join(",", words)}");
+                logger?.Trace($"isRus - {isRus}, start replace words - {string.Join(",", words)}");
                 var count = words.Count;
                 var wordsCopy = words.Select(c => Tuple.Create(c.Item1, c.Item2)).ToList();
-                logger.Trace($"delete {count} chars");
+                logger?.Trace($"delete {count} chars");
                 for (int i = 0; i < count; i++)
                     SendKeys.Send("{BACKSPACE}");
 
@@ -193,14 +193,14 @@ namespace Inputer
                 alphabitFrom = alphabitEn;
                 alphabitTo = alphabitEn;
                 alphabitFromShift = alphabitEnShiftFrom;
-                alphabitToShift = alphabitEnShiftFrom;
+                alphabitToShift = alphabitEnShiftTo;
             }
             StringBuilder resultWord = new StringBuilder();
             foreach (var word in words)
             {
                 var ch = word.Item1;
                 var isShift = word.Item2;
-                logger.Trace($"{word}");
+                logger?.Trace($"{word}");
                 var index = (isShift ? alphabitFromShift : alphabitFrom).IndexOf(isShift ? ch : ch.ToLower());
                 if (index != -1)
                 {
@@ -215,8 +215,9 @@ namespace Inputer
             return resultWord.ToString();
         }
 
-        const string alphabitEn = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./`1234567890-=";
+        const string alphabitEn =          "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./`1234567890-=";
         const string alphabitEnShiftFrom = "QWERTYUIOP[]\\ASDFGHJKL;'ZXCVBNM,./`1234567890-=";
+        const string alphabitEnShiftTo   = "QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?~!@#$%^&*()_+";
         const string alphabitRu = "йцукенгшщзхъ\\фывапролджэячсмитьбю.ё1234567890-=";
         const string alphabitRuShiftTo = "ЙЦУКЕНГШЩЗХЪ\\ФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё!\"№;%:?*()_+";
         

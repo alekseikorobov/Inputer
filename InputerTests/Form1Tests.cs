@@ -90,5 +90,39 @@ namespace Inputer.Tests
                 Assert.AreEqual(to, result);
             }
         }
+
+        [TestMethod()]
+        public void ConvertTest_ru_to_en_with_spec_chars()
+        {
+            Form1 form1 = new Form1("test");
+            List<Tuple<List<Tuple<string, bool>>, string>> words = new List<Tuple<List<Tuple<string, bool>>, string>>();
+            words.Add(
+                Tuple.Create(new List<Tuple<string, bool>>
+                {
+                    Tuple.Create("w",false),
+                    Tuple.Create("i",false),
+                    Tuple.Create("t",false),
+                    Tuple.Create("h",false),
+                    Tuple.Create("9",true),
+                    Tuple.Create("n",false),
+                    Tuple.Create("o",false),
+                    Tuple.Create("l",false),
+                    Tuple.Create("o",false),
+                    Tuple.Create("c",false),
+                    Tuple.Create("k",false),
+                    Tuple.Create("0",true),
+                }
+                , "with(nolock)")
+                );
+            //после того как я поехал домой? то увидел что-то новое
+            foreach (var word in words)
+            {
+                var from = word.Item1;
+                var to = word.Item2;
+
+                var result = form1.Convert(from, true);
+                Assert.AreEqual(to, result);
+            }
+        }
     }
 }
