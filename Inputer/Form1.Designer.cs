@@ -42,10 +42,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(13, 13);
-            this.button1.Margin = new System.Windows.Forms.Padding(4);
+            this.button1.Location = new System.Drawing.Point(10, 11);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(100, 28);
+            this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "debug";
             this.button1.UseVisualStyleBackColor = true;
@@ -65,7 +64,7 @@
             this.hotKeyToolStripMenuItem,
             this.выходToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(200, 52);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(172, 48);
             // 
             // hotKeyToolStripMenuItem
             // 
@@ -73,40 +72,42 @@
             this.insertToolStripMenuItem,
             this.pauseBrakeToolStripMenuItem});
             this.hotKeyToolStripMenuItem.Name = "hotKeyToolStripMenuItem";
-            this.hotKeyToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
+            this.hotKeyToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.hotKeyToolStripMenuItem.Text = "Горячая клавиша";
             // 
             // insertToolStripMenuItem
             // 
             this.insertToolStripMenuItem.Name = "insertToolStripMenuItem";
-            this.insertToolStripMenuItem.Size = new System.Drawing.Size(158, 26);
+            this.insertToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.insertToolStripMenuItem.Text = "Insert";
             this.insertToolStripMenuItem.Click += new System.EventHandler(this.insertToolStripMenuItem_Click);
             // 
             // pauseBrakeToolStripMenuItem
             // 
             this.pauseBrakeToolStripMenuItem.Name = "pauseBrakeToolStripMenuItem";
-            this.pauseBrakeToolStripMenuItem.Size = new System.Drawing.Size(158, 26);
+            this.pauseBrakeToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.pauseBrakeToolStripMenuItem.Text = "PauseBrake";
             this.pauseBrakeToolStripMenuItem.Click += new System.EventHandler(this.pauseBrakeToolStripMenuItem_Click);
             // 
             // выходToolStripMenuItem
             // 
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            this.выходToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.выходToolStripMenuItem.Text = "Выход";
             this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(404, 117);
+            this.ClientSize = new System.Drawing.Size(303, 95);
             this.Controls.Add(this.button1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.Text = "Form1";
+            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 

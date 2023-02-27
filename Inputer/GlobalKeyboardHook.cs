@@ -26,6 +26,7 @@ namespace Inputer
     class GlobalKeyboardHook : IDisposable
     {
         public event EventHandler<GlobalKeyboardHookEventArgs> KeyboardPressed;
+        public event EventHandler<GlobalKeyboardHookEventArgs> SwitchLanguagePressed;
         public event GetEventMouse eventMouse;
         public delegate void GetEventMouse(Win32.TypeMouse type, int x, int y);
         
@@ -146,6 +147,8 @@ namespace Inputer
         bool reset = false;
         public bool isDebug = false;
         public Keys HotKey { get; set; } = Keys.Pause;
+        public Keys SwitchLanguage { get; set; } = Keys.CapsLock;
+        public bool UseSwitchLanguage { get; set; } = false;
 
         public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -156,20 +159,29 @@ namespace Inputer
             {
                 object o = Marshal.PtrToStructure(lParam, typeof(Win32.LowLevelKeyboardInputEvent));
                 Win32.LowLevelKeyboardInputEvent p = (Win32.LowLevelKeyboardInputEvent)o;
-                if(isDebug)
-                    System.Diagnostics.Debug.WriteLine($"system - p.Key {p.Key} - {((Win32.KeyboardState)wparamTyped)}");
-
-                bool isKeyStrlOrShift = p.Key == Keys.LShiftKey || p.Key == Keys.RShiftKey
+                bool isKeyСtrlOrShift = p.Key == Keys.LShiftKey || p.Key == Keys.RShiftKey
                     || p.Key == Keys.LControlKey || p.Key == Keys.RControlKey;
-                if (isKeyStrlOrShift)
+
+                if(isDebug)
+                    System.Diagnostics.Debug.WriteLine($"system - p.Key {p.Key} - {((Win32.KeyboardState)wparamTyped)} - save - {save}, shiftPressed-{shiftPressed}, isKeyСtrlOrShift - {isKeyСtrlOrShift}");
+
+                if (isKeyСtrlOrShift)
                 {
                     if (p.Key == Keys.LControlKey || p.Key == Keys.RControlKey)
+                    {
                         ctrlPressed = save || ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.KeyDown
                                     || ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.SysKeyDown;
+                        
+                        if (ctrlPressed) save = ctrlPressed;
+                    }
                     if (p.Key == Keys.LShiftKey || p.Key == Keys.RShiftKey)
+                    {
                         shiftPressed = save ||
                             ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.KeyDown
                                    || ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.SysKeyDown;
+
+                        if (shiftPressed) save = shiftPressed;
+                    }
 
                     if(((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.KeyUp
                                    || ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.SysKeyUp)
@@ -181,6 +193,9 @@ namespace Inputer
                 {
                     save = ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.KeyDown
                         || ((Win32.KeyboardState)wparamTyped) == Win32.KeyboardState.SysKeyDown;
+
+                    if (isDebug)
+                        System.Diagnostics.Debug.WriteLine($"save - {save}");
                 }
 
                 var eventArguments = new GlobalKeyboardHookEventArgs(p, (Win32.KeyboardState)wparamTyped);
@@ -197,10 +212,20 @@ namespace Inputer
                     }
                     return (IntPtr)1;
                 }
+                if (UseSwitchLanguage && p.Key == SwitchLanguage)
+                {
+                    if ((eventArguments.KeyboardState == Win32.KeyboardState.KeyUp
+                    || eventArguments.KeyboardState == Win32.KeyboardState.SysKeyUp))
+                    {
+                        EventHandler<GlobalKeyboardHookEventArgs> handler = SwitchLanguagePressed;
+                        handler?.Invoke(this, eventArguments);
+                    }
+                    return (IntPtr)1;
+                }
 
                 if ((eventArguments.KeyboardState == Win32.KeyboardState.KeyUp
                     || eventArguments.KeyboardState == Win32.KeyboardState.SysKeyUp)
-                    && !isKeyStrlOrShift)
+                    && !isKeyСtrlOrShift)
                 {
                     EventHandler<GlobalKeyboardHookEventArgs> handler = KeyboardPressed;
                     handler?.Invoke(this, eventArguments);

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,9 +21,48 @@ namespace Inputer
         private GlobalKeyboardHook _globalKeyboardHook;
         public Form1()
         {
-            logger = NLog.LogManager.GetLogger("Application");
-            InitializeComponent();
+            try
+            {
+                logger = NLog.LogManager.GetLogger("Application");
+                InitializeComponent();
 
+                logger?.Trace($"Init hook");
+                _globalKeyboardHook = new GlobalKeyboardHook(true, false);
+
+                var useSwitchLanguage = ConfigurationManager.AppSettings["UseSwitchLanguage"]?.ToString() == "true";
+
+                _globalKeyboardHook.UseSwitchLanguage = useSwitchLanguage;
+                _globalKeyboardHook.KeyboardPressed += EventHook_eventKey;
+                _globalKeyboardHook.SwitchLanguagePressed += _globalKeyboardHook_SwitchLanguagePressed;
+
+                //if you need include event mouse
+                //_globalKeyboardHook.eventMouse += _globalKeyboardHook_eventMouse;
+
+                SetSwitchKey();
+
+                this.Resize += new System.EventHandler(this.Form1_Resize);
+
+                logger?.Trace($"set Minimized WindowState");
+                this.WindowState = FormWindowState.Minimized;
+
+                nowLang = GetInputLang();               
+            }
+            catch (Exception ex)
+            {
+                logger?.Error(ex);
+
+                throw;
+            }
+
+        }
+
+        private void _globalKeyboardHook_SwitchLanguagePressed(object sender, GlobalKeyboardHookEventArgs e)
+        {
+            ChangeLanguage();
+        }
+
+        private void SetSwitchKey()
+        {
             var switchKeyString = ConfigurationManager.AppSettings["SwitchKey"].ToString();
             logger?.Trace($"Get switchKeyString from config - {switchKeyString}");
             if (!string.IsNullOrEmpty(switchKeyString) && !Enum.TryParse(switchKeyString, true, out switchKey))
@@ -32,27 +72,14 @@ namespace Inputer
             }
             if(switchKey == Keys.Pause)
             {
-                pauseBrakeToolStripMenuItem.Checked = true;
+                pauseBrakeToolStripMenuItem_Click(null, null);
+            }
+            else if (switchKey == Keys.Insert)
+            {
+                insertToolStripMenuItem_Click(null, null);
             }
 
             logger?.Trace($"Set from config set default {switchKey}");
-
-
-            logger?.Trace($"Init hook");
-            _globalKeyboardHook = new GlobalKeyboardHook(true, false);
-            _globalKeyboardHook.HotKey = switchKey;
-
-
-            _globalKeyboardHook.KeyboardPressed += EventHook_eventKey;
-
-            //if you need include event mouse
-            //_globalKeyboardHook.eventMouse += _globalKeyboardHook_eventMouse;
-
-            this.Resize += new System.EventHandler(this.Form1_Resize);
-
-            logger?.Trace($"set Minimized WindowState");
-            this.WindowState = FormWindowState.Minimized;
-
         }
         private Keys switchKey;
 
@@ -66,43 +93,57 @@ namespace Inputer
         public Form1(string test)
         {
         }
-    
+
         List<Tuple<string, bool>> words = new List<Tuple<string, bool>>();
+
+        List<Tuple<string, bool>> tempString = new List<Tuple<string, bool>>();
+        private string nowLang;
+        
 
         private void EventHook_eventKey(object sender, GlobalKeyboardHookEventArgs e)
         {
-            logger?.Trace($"key - {e.KeyboardData.Key}, shift -  {e.ShiftPressed}, ctr - {e.CtrlPressed}, state - {e.KeyboardState}");
+            try
+            {
+                logger?.Trace($"key - {e.KeyboardData.Key}, shift -  {e.ShiftPressed}, ctr - {e.CtrlPressed}, state - {e.KeyboardState}");
 
-            if (e.KeyboardData.Key == switchKey)
-            {
-                ChangeLanguage();
-                return;
-            }
-            if (e.KeyboardData.Key == Keys.Back)
-            {
-                if (words.Count > 0)
+                if (e.KeyboardData.Key == switchKey)
                 {
-                    var ch = words[words.Count - 1];
-                    words.RemoveAt(words.Count - 1);
-                    logger?.Trace($"Remove last char - '{ch}' from words, now length - {words.Count}");
+                    SwitchTextLanguage();
+                    return;
+                }
+                if (e.KeyboardData.Key == Keys.Back)
+                {
+                    if (words.Count > 0)
+                    {
+                        var ch = words[words.Count - 1];
+                        words.RemoveAt(words.Count - 1);
+                        logger?.Trace($"Remove last char - '{ch}' from words, now length - {words.Count}");
+                    }
+                    else
+                    {
+                        logger?.Trace($"words is empty");
+                    }
+                    return;
+                }
+                var keyString = !e.CtrlPressed ? KeysConv.ConvertToString(e.KeyboardData.Key) : null;
+                logger?.Trace($"keyString - {keyString}");
+                if (keyString != null)
+                {
+                    words.Add(Tuple.Create(keyString, e.ShiftPressed));
+                    tempString.Add(Tuple.Create(keyString, e.ShiftPressed));
+
+                    logger?.Trace($"now length words - {words.Count} - {string.Join(",", words)}");
                 }
                 else
                 {
-                    logger?.Trace($"words is empty");
+                    logger?.Trace($"Empty words");
+                    words.Clear();
                 }
-                return;
             }
-            var keyString = !e.CtrlPressed ? KeysConv.ConvertToString(e.KeyboardData.Key) : null;
-            logger?.Trace($"keyString - {keyString}");
-            if (keyString != null)
+            catch (Exception ex)
             {
-                words.Add(Tuple.Create(keyString, e.ShiftPressed));
-                logger?.Trace($"now length words - {words.Count} - {string.Join(",", words)}");
-            }
-            else
-            {
-                logger?.Trace($"Empty words");
-                words.Clear();
+                logger.Error(ex);
+                throw;
             }
         }
 
@@ -140,29 +181,9 @@ namespace Inputer
 
         const string langEng = "00000409";
         const string langRus = "00000419";
-        private void ChangeLanguage()
-        {
-            logger?.Trace($"start ChangeLanguage");
-            var nowLang = GetInputLang();
-
-            bool isRus = nowLang == langRus;
-
-            ///https://ru.stackoverflow.com/questions/413208/%D0%A1%D0%BC%D0%B5%D0%BD%D0%B0-%D1%80%D0%B0%D1%81%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8-%D0%BA%D0%BB%D0%B0%D0%B2%D0%B8%D0%B0%D1%82%D1%83%D1%80%D1%8B-%D0%B2-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B5           
-
-            var newLang = isRus ? langEng : langRus;
-
-            logger?.Trace($"switch to new lang - {newLang}");
-            isRus = !isRus;
-
-            int ret = Win32.LoadKeyboardLayout(newLang, 1);
-            Win32.PostMessage(Win32.GetForegroundWindow(), 0x50, 1, ret);
-
-            do
-            {
-                nowLang = GetInputLang();
-            } while (newLang != nowLang);
-
-            logger?.Trace($"Seted to new lang - {newLang}");
+        private void SwitchTextLanguage()
+        {            
+            bool isRus = ChangeLanguage();
 
             if (words.Any())
             {
@@ -181,7 +202,38 @@ namespace Inputer
             }
         }
 
-        public string Convert(List<Tuple<string, bool>> words, bool isEng)
+        private bool ChangeLanguage()
+        {            
+            logger?.Trace($"start ChangeLanguage");
+            nowLang = GetInputLang();
+
+            bool isRus = nowLang == langRus;
+
+            ///https://ru.stackoverflow.com/questions/413208/%D0%A1%D0%BC%D0%B5%D0%BD%D0%B0-%D1%80%D0%B0%D1%81%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8-%D0%BA%D0%BB%D0%B0%D0%B2%D0%B8%D0%B0%D1%82%D1%83%D1%80%D1%8B-%D0%B2-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B5           
+
+            var newLang = isRus ? langEng : langRus;
+            logger?.Trace($"switch to new lang - {newLang}");
+            isRus = !isRus;
+
+            int ret = Win32.LoadKeyboardLayout(newLang, 1);
+            Win32.PostMessage(Win32.GetForegroundWindow(), 0x50, 1, ret);
+
+            do
+            {
+                nowLang = GetInputLang();
+            } while (newLang != nowLang);
+
+            logger?.Trace($"Seted to new lang - {newLang}");
+            return isRus;
+        }
+
+        public string Convert(IEnumerable<Tuple<string, bool>> words)
+        {
+            nowLang = GetInputLang();
+            var isEng = nowLang == langEng;
+            return Convert(words, isEng);
+        }
+        public string Convert(IEnumerable<Tuple<string, bool>> words, bool isEng)
         {
             var alphabitFrom = alphabitEn;
             var alphabitTo = alphabitRu;
@@ -215,12 +267,12 @@ namespace Inputer
             return resultWord.ToString();
         }
 
-        const string alphabitEn =          "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./`1234567890-=";
+        const string alphabitEn = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./`1234567890-=";
         const string alphabitEnShiftFrom = "QWERTYUIOP[]\\ASDFGHJKL;'ZXCVBNM,./`1234567890-=";
-        const string alphabitEnShiftTo   = "QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?~!@#$%^&*()_+";
+        const string alphabitEnShiftTo = "QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?~!@#$%^&*()_+";
         const string alphabitRu = "йцукенгшщзхъ\\фывапролджэячсмитьбю.ё1234567890-=";
         const string alphabitRuShiftTo = "ЙЦУКЕНГШЩЗХЪ\\ФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё!\"№;%:?*()_+";
-        
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (_globalKeyboardHook != null)
